@@ -8,7 +8,7 @@
 >Input -> String -> Vector 
 
 ### Input-Vector to Equation-Tree
-- Lexer -> Parser
+>Lexer -> Parser
 
 
 ## Lexer (Brackets not included!)
