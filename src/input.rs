@@ -26,10 +26,10 @@ fn get_input_vec(input: &String) -> Vec<char> {
 }
 
 fn check_input(input_v: &Vec<char>) -> Result<(), String> {
-    // check for unvalid chars 
     let valid_symbols: [char; 6] = ['+', '-', '*', '/', '(', ')']; 
     let mut input_v_iter = input_v.iter().peekable();
     while let Some(symbol) = input_v_iter.next() { 
+        // check for unvalid chars 
         if !(valid_symbols.contains(symbol) || symbol.is_numeric() || *symbol == 'x') {
             return Err("first check error: The Function needs to match the Criteria!".to_string());
         }
