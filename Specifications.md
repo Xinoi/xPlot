@@ -13,8 +13,13 @@
 
 ## Lexer (Brackets not included!)
 Equation :: ({Component ['+' | '-']})
+
 Component :: [Faktor] Variable
+
 Variable :: (x | x^(Equation) | Operation | '')
+
 Operation :: ['*' | '/'] Variable
+
 Faktor :: { Number }
+
 Number :: 1 | 2 | ... | 9 | 0
