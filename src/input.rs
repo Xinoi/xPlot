@@ -36,7 +36,7 @@ fn check_input(input_v: &Vec<char>) -> Result<(), String> {
         //check if two symbols get repeated
         if let Some(next_symbol) = input_v_iter.peek() {
             if symbol == *next_symbol {
-                if *symbol == '(' || *symbol == ')' {
+                if *symbol == '(' || *symbol == ')' || symbol.is_numeric() {
                     continue;
                 }else {
                     return Err("first check error: Something in your function looks wrong!".to_string());
