@@ -1,4 +1,4 @@
-    mod input;
+mod input;
 
 fn main() {
 
@@ -24,6 +24,5 @@ fn combine_numbers_and_chars(input: Vec<char>) -> Vec<String> {
     if !current_number.is_empty() {
         result.push(current_number);
     }
-
     result
 }
