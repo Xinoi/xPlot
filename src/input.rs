@@ -1,28 +1,32 @@
 use std::io::{stdin, stdout, Write};
 
 pub fn get_input() -> Result<Vec<char>, String> {
-   let i_str = get_input_string(); 
-   let i_vec = get_input_vec(&i_str);
-   match check_input(&i_vec) {
-       Ok(_) => Ok(i_vec.clone()),
-       Err(e) => Err(e),
-   }
+    //combine the methods
+    let i_str = get_input_string(); 
+    let i_vec = get_input_vec(&i_str);
+    match check_input(&i_vec) {
+        Ok(_) => Ok(i_vec.clone()),
+        Err(e) => Err(e),
+    }
 }
 
 fn get_input_string() -> String {
     print!("f(x) = ");
     stdout().flush().expect("Could not flush output!");
     let mut input = String::new();
+    // read input from the terminal
     stdin().read_line(&mut input).expect("error: input incorrect String");
     input
 }
 
 fn get_input_vec(input: &String) -> Vec<char> {
     let mut elements: Vec<char> = Vec::new();
+    // convert String to char Vec
     for c in input.trim().chars() {
          elements.push(c);
     }
-    elements
+
+    elements.into_iter().filter(|x| *x != ' ').collect()
 }
 
 fn check_input(input_v: &Vec<char>) -> Result<(), String> {
