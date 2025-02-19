@@ -1,7 +1,7 @@
 mod input;
+mod lexer;
 
 fn main() {
-
     let final_input = combine_numbers_and_chars(input::get_input().expect("function not correct"));
     println!("{:?}", final_input);
 }

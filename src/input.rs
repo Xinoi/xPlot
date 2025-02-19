@@ -5,7 +5,7 @@ pub fn get_input() -> Result<Vec<char>, String> {
     let i_str = get_input_string(); 
     let i_vec = get_input_vec(&i_str);
     match check_input(&i_vec) {
-        Ok(_) => Ok(i_vec.clone()),
+        Ok(_) => Ok(i_vec.clone().into_iter().filter(|x| !x.is_whitespace()).collect()),
         Err(e) => Err(e),
     }
 }
