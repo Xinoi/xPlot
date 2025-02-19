@@ -1,9 +1,15 @@
 mod input;
 mod lexer;
+mod parser;
 
 fn main() {
+    //print read list
     let final_input = combine_numbers_and_chars(input::get_input().expect("function not correct"));
     println!("{:?}", final_input);
+
+    //print lexed list 
+    let input_lexed = lexer::tag(&final_input);
+    lexer::print_tokens(input_lexed);
 }
 
 fn combine_numbers_and_chars(input: Vec<char>) -> Vec<String> {
