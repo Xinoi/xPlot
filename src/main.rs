@@ -10,6 +10,11 @@ fn main() {
     //print lexed list 
     let input_lexed = lexer::tag(&final_input);
     lexer::print_tokens(&input_lexed);
+
+    let tree = parser::TokenTree::parse_from_lexer(&input_lexed).unwrap(); 
+    println!("{}", &tree);
+    println!("result: {}", &tree.calculate());
+
 }
 
 fn combine_numbers_and_chars(input: Vec<char>) -> Vec<String> {

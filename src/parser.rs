@@ -1,21 +1,57 @@
 use crate::lexer::{Token, Type};
+use std::fmt;
 
-struct TokenTree {
-    mid: Option<Token>, 
-    left: Box<Option<TokenTree>>, 
-    right: Box<Option<TokenTree>>, 
+#[derive(Clone)]
+pub enum TokenTree {
+    Leaf(String),
+    Node(Type, Box<TokenTree>, Box<TokenTree>) // mid left right
 }
-impl TokenTree {
-    fn head() -> Self {
-        Self {
-            mid: None, 
-            left: Box::new(None),
-            right: Box::new(None),
+
+impl fmt::Display for TokenTree {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            TokenTree::Leaf(value) => write!(f, "{}", value),
+            TokenTree::Node(mid, left, right) => write!(f, "[ {} - {:#?} - {} ]", left, mid, right),
         }
     }
-    fn parse_from_lexer(&self, lexer_list: &Vec<Token>) {
+}
+
+impl TokenTree {  
+    pub fn parse_from_lexer(lexer_list: &Vec<Token>) -> Result<Self, &'static str> {
         let rpn = shunting_yard(&lexer_list);
-         
+        let mut stack: Vec<TokenTree> = Vec::new();
+
+        for t in rpn {
+            match t.tag {
+                Type::VALUE | Type::VAR => stack.push(TokenTree::Leaf(t.word)),
+                _ => {
+                    let right = stack.pop(); // needs to be inverted
+                    let left = stack.pop();
+                    let node = TokenTree::Node(t.tag, Box::new(left.unwrap()), Box::new(right.unwrap()));
+                    stack.push(node);
+                }, 
+            }
+        }
+
+        if stack.len() != 1 {
+            Err("failed to parse into tree")
+        }else { Ok(stack.last().unwrap().clone()) } 
+    }
+    
+    // error if x is in the equation
+    pub fn calculate(&self) -> f32{
+        match self {
+            TokenTree::Leaf(value) => value.parse::<f32>().unwrap(),
+            TokenTree::Node(m, l, r) => {
+                match m {
+                    Type::PLUS => l.calculate() + r.calculate(),
+                    Type::MINUS => l.calculate() - r.calculate(),
+                    Type::TIMES => l.calculate() * r.calculate(),
+                    Type::FRAC => l.calculate() / r.calculate(), // obv error if div through 0
+                    _ => 0.0,
+                }
+            }
+        }
     }
 }
 
@@ -47,6 +83,8 @@ fn shunting_yard(input: &Vec<Token>) -> Vec<Token> {
     }
     stack.reverse();
     queue.append(&mut stack);
+    
+    println!("{:?}", queue);
 
     queue
 }
