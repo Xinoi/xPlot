@@ -52,19 +52,41 @@ impl fmt::Display for Token {
 }
 
 pub fn tag(input: &Vec<String>) -> Vec<Token> { 
-    let input_iter = input.into_iter();
     let mut tags: Vec<Token> = Vec::new();
     
-    for w in input_iter {
-        match w.chars().next().unwrap() {
+    for w in 0..input.len() {
+        match input.get(w).expect("no element").chars().next().unwrap() {
             '+' => tags.push(Token::new("+".to_string(), Type::PLUS)),
             '-' => tags.push(Token::new("-".to_string(), Type::MINUS)),
             '*' => tags.push(Token::new("*".to_string(), Type::TIMES)),
             '/' => tags.push(Token::new("/".to_string(), Type::FRAC)),
             '(' => tags.push(Token::new("(".to_string(), Type::BLEFT)),
             ')' => tags.push(Token::new(")".to_string(), Type::BRIGHT)),
-            'x' => tags.push(Token::new("x".to_string(), Type::VAR)),
-            _ => tags.push(Token::new(w.to_string(), Type::VALUE)),
+            'x' => {
+                let pre = if w > 0 {input.get(w-1)}else { None };
+                let post = input.get(w+1);
+
+                if let Some(e) = pre {
+                    if e.chars().next().unwrap().is_digit(10) {
+                        tags.push(Token::new("*".to_string(), Type::TIMES));
+                        tags.push(Token::new("x".to_string(), Type::VAR));
+                        continue;
+                    } else if e.chars().next().unwrap() == ')' {
+                        tags.push(Token::new("*".to_string(), Type::TIMES));
+                        tags.push(Token::new("x".to_string(), Type::VAR)); 
+                        continue;
+                    }
+                }
+                if let Some(e) = post {
+                    if e.chars().next().unwrap().is_digit(10) {
+                        tags.push(Token::new("x".to_string(), Type::VAR));
+                        tags.push(Token::new("*".to_string(), Type::TIMES));
+                        continue;
+                    }
+                }
+                tags.push(Token::new("x".to_string(), Type::VAR));
+            },
+            _ => tags.push(Token::new(input.get(w).expect("no element").to_string(), Type::VALUE)),
         }
     }
     tags

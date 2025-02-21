@@ -10,8 +10,6 @@ fn main() {
     //print lexed list 
     let input_lexed = lexer::tag(&final_input);
     lexer::print_tokens(&input_lexed);
-
-    parser::shunting_yard(&input_lexed);
 }
 
 fn combine_numbers_and_chars(input: Vec<char>) -> Vec<String> {

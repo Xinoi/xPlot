@@ -14,12 +14,12 @@ impl TokenTree {
         }
     }
     fn parse_from_lexer(&self, lexer_list: &Vec<Token>) {
+        let rpn = shunting_yard(&lexer_list);
          
     }
 }
 
-// todo! remove pub
-pub fn shunting_yard(input: &Vec<Token>) -> Vec<Token> {
+fn shunting_yard(input: &Vec<Token>) -> Vec<Token> {
     let mut queue: Vec<Token> = Vec::new();
     let mut stack: Vec<Token> = Vec::new();
     
@@ -27,7 +27,6 @@ pub fn shunting_yard(input: &Vec<Token>) -> Vec<Token> {
         match t.tag {
             Type::VALUE | Type::VAR => queue.push(t.clone()),
             Type::PLUS | Type::MINUS | Type::TIMES | Type::FRAC => {
-                println!("got operator!");
                 while let Some(s) = stack.last() {
                     if s.tag.get_precedence() >= t.tag.get_precedence() {
                         queue.push(s.clone());
@@ -38,7 +37,6 @@ pub fn shunting_yard(input: &Vec<Token>) -> Vec<Token> {
             },
             Type::BLEFT => stack.push(t.clone()),
             Type::BRIGHT => {
-                println!("got right b");
                 while stack.last().expect("no value").tag != Type::BLEFT {
                     queue.push(stack.last().expect("no value").clone());
                     stack.pop();
@@ -50,8 +48,5 @@ pub fn shunting_yard(input: &Vec<Token>) -> Vec<Token> {
     stack.reverse();
     queue.append(&mut stack);
 
-    println!("{:#?}", queue);
-
     queue
-
 }
