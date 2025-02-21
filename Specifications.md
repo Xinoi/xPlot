@@ -12,6 +12,18 @@
 
 
 ## Lexer (Brackets not included!)
+
+#### Types 
+PLUS: + 
+MINUS: -
+TIMES: *
+FRAC: /
+BLEFT: (
+BRIGHT: )
+VAR: x 
+VAL: { 1 | ... | 9 }
+
+#### EBNF
 Equation :: ({Component ['+' | '-']})
 
 Component :: [Faktor] Variable
@@ -23,3 +35,10 @@ Operation :: ['*' | '/'] Variable
 Faktor :: { Number }
 
 Number :: 1 | 2 | ... | 9 | 0
+
+## Parser
+-> user *reverse polish notation (rpn)* to convert to binary tree
+
+>[!note] RPN 
+> Algorithm to convert a mathematical expression into a postfix format. 
+

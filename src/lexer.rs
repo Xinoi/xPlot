@@ -4,8 +4,9 @@
 use std::fmt;
 
 #[derive(Debug)]
+#[derive(Clone)]
 #[derive(PartialEq)]
-enum Type {
+pub enum Type {
     PLUS,
     MINUS,
     TIMES,
@@ -16,10 +17,24 @@ enum Type {
     VALUE,
 }
 
+impl Type {
+    pub fn get_precedence(&self) -> i8{
+        match self {
+            Self::PLUS => 2,
+            Self::MINUS => 2,
+            Self::TIMES => 3,
+            Self::FRAC => 3,
+            _ => -1
+        }
+    }
+}
+
+#[derive(Debug)]
+#[derive(Clone)]
 #[derive(PartialEq)]
 pub struct Token { 
-    word: String,
-    tag: Type,
+    pub word: String,
+    pub tag: Type,
 }
 
 impl Token {
@@ -55,9 +70,9 @@ pub fn tag(input: &Vec<String>) -> Vec<Token> {
     tags
 }
 
-pub fn print_tokens(token_list: Vec<Token>) {
+pub fn print_tokens(token_list: &Vec<Token>) {
     print!("[ ");
-    for t in &token_list {
+    for t in token_list {
         if t == token_list.last().expect("Tokenlist empty")  {
             print!("{}", t);
         }else {
