@@ -2,7 +2,13 @@ mod input;
 mod lexer;
 mod parser;
 
-fn main() {
+use macroquad::prelude::*;
+
+static W_HEIGHT: i32 = 800;
+static W_WIDTH: i32 = 1200;
+
+#[macroquad::main(window_conf)]
+async fn main() {
     //print read list
     let final_input = combine_numbers_and_chars(input::get_input().expect("function not correct"));
     println!("{:?}", final_input);
@@ -13,7 +19,37 @@ fn main() {
 
     let tree = parser::TokenTree::parse_from_lexer(&input_lexed).unwrap(); 
     println!("{}", &tree);
-    println!("result: {}", &tree.calculate());
+    
+
+    draw_graph().await;
+
+}
+
+async fn draw_graph() {
+    loop {
+        clear_background(BLACK);
+
+        axis();
+
+        next_frame().await;
+    }
+}
+
+fn axis() {
+   draw_line(0.0, (W_HEIGHT / 2) as f32, W_WIDTH as f32, (W_HEIGHT / 2) as f32, 100.0, WHITE); 
+}
+
+fn window_conf() -> Conf {
+    Conf {
+        window_title: "Graph".to_owned(),
+        window_width: W_WIDTH,
+        window_height: W_HEIGHT,
+        platform: miniquad::conf::Platform {
+            linux_backend: miniquad::conf::LinuxBackend::WaylandWithX11Fallback,
+            ..Default::default()
+        }, 
+        ..Default::default()
+    }
 
 }
 

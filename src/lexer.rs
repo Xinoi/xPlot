@@ -67,22 +67,18 @@ pub fn tag(input: &Vec<String>) -> Vec<Token> {
                 let post = input.get(w+1);
 
                 if let Some(e) = pre {
-                    if e.chars().next().unwrap().is_digit(10) {
+                    if e.chars().next().unwrap().is_digit(10) || e.chars().next().unwrap() == ')' {
                         tags.push(Token::new("*".to_string(), Type::TIMES));
                         tags.push(Token::new("x".to_string(), Type::VAR));
-                        continue;
-                    } else if e.chars().next().unwrap() == ')' {
-                        tags.push(Token::new("*".to_string(), Type::TIMES));
-                        tags.push(Token::new("x".to_string(), Type::VAR)); 
                         continue;
                     }
                 }
                 if let Some(e) = post {
-                    if e.chars().next().unwrap().is_digit(10) {
+                    if e.chars().next().unwrap().is_digit(10) || e.chars().next().unwrap() == '(' {
                         tags.push(Token::new("x".to_string(), Type::VAR));
                         tags.push(Token::new("*".to_string(), Type::TIMES));
                         continue;
-                    }
+                    } 
                 }
                 tags.push(Token::new("x".to_string(), Type::VAR));
             },
