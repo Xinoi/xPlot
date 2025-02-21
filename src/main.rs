@@ -4,8 +4,11 @@ mod parser;
 
 use macroquad::prelude::*;
 
-static W_HEIGHT: i32 = 800;
-static W_WIDTH: i32 = 1200;
+static W_HEIGHT: f32 = 800.0;
+static W_WIDTH: f32 = 1200.0;
+static MID: (f32, f32) = (W_WIDTH / 2.0, W_HEIGHT / 2.0);
+static SCALE: f32 = 1.0;
+static STEP: f32 = 20.0 * SCALE;
 
 #[macroquad::main(window_conf)]
 async fn main() {
@@ -20,7 +23,6 @@ async fn main() {
     let tree = parser::TokenTree::parse_from_lexer(&input_lexed).unwrap(); 
     println!("{}", &tree);
     
-
     draw_graph().await;
 
 }
@@ -36,14 +38,28 @@ async fn draw_graph() {
 }
 
 fn axis() {
-   draw_line(0.0, (W_HEIGHT / 2) as f32, W_WIDTH as f32, (W_HEIGHT / 2) as f32, 100.0, WHITE); 
+    draw_line(0.0, W_HEIGHT / 2.0, W_WIDTH, W_HEIGHT / 2.0, 1.0, WHITE); 
+    draw_line(W_WIDTH / 2.0, 0.0, W_WIDTH / 2.0, W_HEIGHT, 1.0, WHITE);
+    
+    // x lines
+    for i in 0..((W_WIDTH / 2.0) / STEP) as i32 {
+        draw_line(MID.0 + (i as f32 * STEP), MID.1 + 5.0, MID.0 + (i as f32 * STEP), MID.1-5.0, 1.0, WHITE);
+        draw_line(MID.0 + (-i as f32 * STEP), MID.1 + 5.0, MID.0 + (-i as f32 * STEP), MID.1-5.0, 1.0, WHITE);
+    }   
+    // y lines
+    for i in 0..((W_HEIGHT / 2.0) / STEP) as i32 {
+        draw_line(MID.0 - 5.0, MID.1 + (i as f32 * STEP), MID.0 + 5.0, MID.1 + (i as f32 * STEP), 1.0, WHITE);
+        draw_line(MID.0 - 5.0, MID.1 + (-i as f32 * STEP), MID.0 + 5.0, MID.1 + (-i as f32 * STEP), 1.0, WHITE);
+
+    }
+
 }
 
 fn window_conf() -> Conf {
     Conf {
         window_title: "Graph".to_owned(),
-        window_width: W_WIDTH,
-        window_height: W_HEIGHT,
+        window_width: W_WIDTH as i32,
+        window_height: W_HEIGHT as i32,
         platform: miniquad::conf::Platform {
             linux_backend: miniquad::conf::LinuxBackend::WaylandWithX11Fallback,
             ..Default::default()

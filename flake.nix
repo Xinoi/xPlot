@@ -11,15 +11,20 @@
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
     in {
-      devShells.default = pkgs.mkShell {
+      devShell.${system} = pkgs.mkShell {
         buildInputs = [
           pkgs.pkg-config 
-          pkgs.libx11
+          pkgs.xorg.libX11 
+          pkgs.xorg.libXi 
+          pkgs.libGL
+          pkgs.libxkbcommon
         ];
-      shellHook = ''
-        export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${pkgs.libx11.lib}/lib"
-        # ... other environment variables
-      '';
+      LD_LIBRARY_PATH = builtins.concatStringsSep ":" [
+        "${pkgs.xorg.libX11}/lib"
+        "${pkgs.xorg.libXi}/lib"
+        "${pkgs.libGL}/lib"
+        "${pkgs.libxkbcommon}/lib"
+      ]; 
       };
     };
 }
