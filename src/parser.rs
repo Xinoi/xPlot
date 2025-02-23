@@ -38,6 +38,29 @@ impl TokenTree {
         }else { Ok(stack.last().unwrap().clone()) } 
     }
     
+    pub fn get_points(&self, def: std::ops::Range<i32>, steps: i32) -> Vec<(f32, f32)> {
+        let mut result: Vec<(f32, f32)> = Vec::new();
+        
+        for i in def {
+            for step in 0..steps {
+                let x = i as f32 + (step as f32 / steps as f32);
+                let y = self.fill_x(x).calculate();
+                result.push((x, y));
+            }
+        }
+        result
+    }
+
+    fn fill_x(&self, x: f32) -> Self {
+        match self {
+            TokenTree::Node(m, l, r) => TokenTree::Node(m.clone(), Box::new(l.fill_x(x)), Box::new(r.fill_x(x))), 
+            TokenTree::Leaf(value) => {
+                if value == "x" {
+                    TokenTree::Leaf(x.to_string())
+                }else { TokenTree::Leaf(value.clone()) } 
+        }
+    }
+} 
     // error if x is in the equation
     pub fn calculate(&self) -> f32{
         match self {
@@ -48,6 +71,7 @@ impl TokenTree {
                     Type::MINUS => l.calculate() - r.calculate(),
                     Type::TIMES => l.calculate() * r.calculate(),
                     Type::FRAC => l.calculate() / r.calculate(), // obv error if div through 0
+                    Type::POW => l.calculate().powf(r.calculate()),
                     _ => 0.0,
                 }
             }
@@ -62,7 +86,7 @@ fn shunting_yard(input: &Vec<Token>) -> Vec<Token> {
     for t in input {
         match t.tag {
             Type::VALUE | Type::VAR => queue.push(t.clone()),
-            Type::PLUS | Type::MINUS | Type::TIMES | Type::FRAC => {
+            Type::PLUS | Type::MINUS | Type::TIMES | Type::FRAC | Type::POW => {
                 while let Some(s) = stack.last() {
                     if s.tag.get_precedence() >= t.tag.get_precedence() {
                         queue.push(s.clone());

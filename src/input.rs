@@ -30,7 +30,7 @@ fn get_input_vec(input: &String) -> Vec<char> {
 }
 
 fn check_input(input_v: &Vec<char>) -> Result<(), String> {
-    let valid_symbols: [char; 6] = ['+', '-', '*', '/', '(', ')']; 
+    let valid_symbols: [char; 7] = ['+', '-', '*', '/', '(', ')', '^']; 
     let mut input_v_iter = input_v.iter().peekable();
     while let Some(symbol) = input_v_iter.next() { 
         // check for unvalid chars 

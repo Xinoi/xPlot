@@ -11,6 +11,7 @@ pub enum Type {
     MINUS,
     TIMES,
     FRAC,
+    POW,
     BLEFT,
     BRIGHT,
     VAR,
@@ -20,10 +21,11 @@ pub enum Type {
 impl Type {
     pub fn get_precedence(&self) -> i8{
         match self {
-            Self::PLUS => 2,
-            Self::MINUS => 2,
-            Self::TIMES => 3,
-            Self::FRAC => 3,
+            Self::PLUS => 1,
+            Self::MINUS => 1,
+            Self::TIMES => 2,
+            Self::FRAC => 2,
+            Self::POW => 3,
             _ => -1
         }
     }
@@ -60,6 +62,7 @@ pub fn tag(input: &Vec<String>) -> Vec<Token> {
             '-' => tags.push(Token::new("-".to_string(), Type::MINUS)),
             '*' => tags.push(Token::new("*".to_string(), Type::TIMES)),
             '/' => tags.push(Token::new("/".to_string(), Type::FRAC)),
+            '^' => tags.push(Token::new("^".to_string(), Type::POW)),
             '(' => tags.push(Token::new("(".to_string(), Type::BLEFT)),
             ')' => tags.push(Token::new(")".to_string(), Type::BRIGHT)),
             'x' => {
