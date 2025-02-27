@@ -22,7 +22,7 @@ impl Vars {
             scale, 
             step: 50. * scale,
             font_size: 7. * scale,
-            iterations: 20,
+            iterations: 30,
             cam_mid: vec2(0., 0.),
             view: (vec2(0., 0.), vec2(screen_width(), screen_height()))
         }
@@ -102,12 +102,12 @@ fn axis(vars: &Vars) {
     let view = vars.view; 
     let real_mid = vars.cam_mid;
     // Draw the main axis lines
-    draw_line(view.0.x, real_mid.y, view.1.x, real_mid.y, 1.0, WHITE); // X-axis
-    draw_line(real_mid.x, view.0.y, real_mid.x, view.1.y, 1.0, WHITE); // Y-axis
+    draw_line(view.0.x, real_mid.y, view.1.x, real_mid.y, 1.0, WHITE);
+    draw_line(real_mid.x, view.0.y, real_mid.x, view.1.y, 1.0, WHITE);
 
     // Compute how many steps fit within the visible world space
-    let x_steps = ((view.1.x - real_mid.x) / vars.step).ceil() as i32; // Steps right of mid
-    let y_steps = ((view.1.y - real_mid.y) / vars.step).ceil() as i32; // Steps above mid
+    let x_steps = ((view.1.x - real_mid.x) / vars.step).ceil() as i32; 
+    let y_steps = ((view.1.y - real_mid.y) / vars.step).ceil() as i32; 
 
     // X-axis ticks (left & right from center)
     for i in -x_steps..=x_steps {
