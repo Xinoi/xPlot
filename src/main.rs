@@ -3,6 +3,7 @@ mod lexer;
 mod parser;
 
 use macroquad::prelude::*;
+use miniquad::window::screen_size;
 
 struct Vars {
     mid: (f32, f32),
@@ -50,21 +51,27 @@ async fn main() {
     let points = tree.get_points(-10..10, vars.iterations);
     println!("points: {:?}", points);
     
+
+    
+
     draw_graph(&mut vars, &points).await;
 }
 
 async fn draw_graph(vars: &mut Vars, points: &Vec<(f32, f32)>) {
     let mut current_scale = 1.0;
-    
-    loop {
 
-       for key in get_keys_pressed() {
+    let mut cam = Camera2D::from_display_rect(Rect::new(0.0, screen_size().1, screen_size().0, -screen_size().1));
+
+    loop {
+        set_camera(&cam);
+
+        for key in get_keys_pressed() {
            match key {
                KeyCode::PageUp => current_scale += 0.1,
                KeyCode::PageDown => current_scale -= 0.1, 
                _ => {}
            }
-       } 
+        } 
 
         vars.update(current_scale);
         let mut points_it = points.into_iter().peekable();
@@ -86,6 +93,7 @@ async fn draw_graph(vars: &mut Vars, points: &Vec<(f32, f32)>) {
 }
 
 fn axis(vars: &Vars) {
+
     draw_line(0.0, screen_height() / 2.0, screen_width(), screen_height() / 2.0, 1.0, WHITE); 
     draw_line(screen_width() / 2.0, 0.0, screen_width() / 2.0, screen_height(), 1.0, WHITE);
     
@@ -133,10 +141,7 @@ fn window_conf() -> Conf {
         window_title: "Graph".to_owned(),
         window_width: 1200,
         window_height: 900,
-        platform: miniquad::conf::Platform {
-            linux_backend: miniquad::conf::LinuxBackend::WaylandWithX11Fallback,
-            ..Default::default()
-        }, 
+        sample_count: 16,
         ..Default::default()
     }
 
