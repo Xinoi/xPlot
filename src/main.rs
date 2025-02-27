@@ -11,6 +11,8 @@ struct Vars {
     step: f32, 
     font_size: f32, 
     iterations: i32,
+    cam_mid: Vec2, 
+    view: (Vec2, Vec2),
 }
 
 impl Vars {
@@ -18,9 +20,11 @@ impl Vars {
         Self {
             mid: (screen_width() / 2.0, screen_height() / 2.0),
             scale, 
-            step: 50.0 * scale,
-            font_size: 7.0 * scale,
+            step: 50. * scale,
+            font_size: 7. * scale,
             iterations: 20,
+            cam_mid: vec2(0., 0.),
+            view: (vec2(0., 0.), vec2(screen_width(), screen_height()))
         }
     }
 
@@ -48,35 +52,37 @@ async fn main() {
     let tree = parser::TokenTree::parse_from_lexer(&input_lexed).unwrap(); 
     println!("{}", &tree);
 
-    let points = tree.get_points(-10..10, vars.iterations);
+    let points = tree.get_points(-100..100, vars.iterations);
     println!("points: {:?}", points);
     
-
-    
-
     draw_graph(&mut vars, &points).await;
 }
 
 async fn draw_graph(vars: &mut Vars, points: &Vec<(f32, f32)>) {
     let mut current_scale = 1.0;
 
+    let mut zoom_level = 1.0;
+    let dt = get_frame_time();
+
     let mut cam = Camera2D::from_display_rect(Rect::new(0.0, screen_size().1, screen_size().0, -screen_size().1));
 
     loop {
-        set_camera(&cam);
 
-        for key in get_keys_pressed() {
-           match key {
-               KeyCode::PageUp => current_scale += 0.1,
-               KeyCode::PageDown => current_scale -= 0.1, 
-               _ => {}
-           }
-        } 
+        if is_key_down(KeyCode::PageUp) {zoom_level *= 1.0 + (dt * 1.0)}
+        if is_key_down(KeyCode::PageDown) {zoom_level *= 1.0 - (dt * 1.0)}
+        zoom_level = zoom_level.clamp(0.5, 7.0);
+
+        cam.zoom = vec2(zoom_level / screen_width() * 2.0, zoom_level / screen_height() * 2.0);
+        set_camera(&cam);
 
         vars.update(current_scale);
         let mut points_it = points.into_iter().peekable();
-        clear_background(BLACK);
+        
+        // Get world-space coordinates of the camera bounds
+        vars.view = (cam.screen_to_world(vec2(0.0, 0.0)), cam.screen_to_world(vec2(screen_width(), screen_height())));
+        vars.cam_mid = cam.screen_to_world(vec2(vars.mid.0, vars.mid.1));
 
+        clear_background(BLACK);
         grid(&vars);
         axis(&vars);
 
@@ -93,46 +99,55 @@ async fn draw_graph(vars: &mut Vars, points: &Vec<(f32, f32)>) {
 }
 
 fn axis(vars: &Vars) {
+    let view = vars.view; 
+    let real_mid = vars.cam_mid;
+    // Draw the main axis lines
+    draw_line(view.0.x, real_mid.y, view.1.x, real_mid.y, 1.0, WHITE); // X-axis
+    draw_line(real_mid.x, view.0.y, real_mid.x, view.1.y, 1.0, WHITE); // Y-axis
 
-    draw_line(0.0, screen_height() / 2.0, screen_width(), screen_height() / 2.0, 1.0, WHITE); 
-    draw_line(screen_width() / 2.0, 0.0, screen_width() / 2.0, screen_height(), 1.0, WHITE);
-    
-    // x lines
-    for i in 1..=((screen_width() / 2.0) / vars.step) as i32 {
-        draw_line(vars.mid.0 + (i as f32 * vars.step), vars.mid.1 + 7.0, vars.mid.0 + (i as f32 * vars.step), vars.mid.1-7.0, 1.0, WHITE);
-        draw_line(vars.mid.0 + (-i as f32 * vars.step), vars.mid.1 + 7.0, vars.mid.0 + (-i as f32 * vars.step), vars.mid.1-7.0, 1.0, WHITE);
-        if i != 0 {
-            draw_text(&i.to_string(), vars.mid.0 + (i as f32 * vars.step) - vars.font_size / 2.0, vars.mid.1 - vars.font_size - 2.0, 18.0 * vars.scale, WHITE);
-            draw_text(&(-i).to_string(), vars.mid.0 + (-i as f32 * vars.step) - vars.font_size, vars.mid.1 - vars.font_size - 2.0, 18.0 * vars.scale, WHITE);
-        }
-    }   
-    // y lines
-    for i in 1..=((screen_height() / 2.0) / vars.step) as i32 {
-        draw_line(vars.mid.0 - 7.0, vars.mid.1 + (i as f32 * vars.step), vars.mid.0 + 7.0, vars.mid.1 + (i as f32 * vars.step), 1.0, WHITE);
-        draw_line(vars.mid.0 - 7.0, vars.mid.1 + (-i as f32 * vars.step), vars.mid.0 + 7.0, vars.mid.1 + (-i as f32 * vars.step), 1.0, WHITE);
-        if i != 0 {
-            draw_text(&(-i).to_string(), vars.mid.0 + vars.font_size + 2.0, vars.mid.1 + (i as f32 * vars.step) + vars.font_size / 2.0, 18.0 * vars.scale, WHITE);
-            draw_text(&i.to_string(), vars.mid.0 + vars.font_size + 2.0, vars.mid.1 + (-i as f32 * vars.step) + vars.font_size / 2.0, 18.0 * vars.scale, WHITE);
-        }
+    // Compute how many steps fit within the visible world space
+    let x_steps = ((view.1.x - real_mid.x) / vars.step).ceil() as i32; // Steps right of mid
+    let y_steps = ((view.1.y - real_mid.y) / vars.step).ceil() as i32; // Steps above mid
+
+    // X-axis ticks (left & right from center)
+    for i in -x_steps..=x_steps {
+        if i == 0 {continue;}
+        let x = real_mid.x + i as f32 * vars.step;
+        draw_line(x, real_mid.y - 7.0, x, real_mid.y + 7.0, 1.0, WHITE);
+        draw_text(&i.to_string(), x - vars.font_size / 2.0, real_mid.y - vars.font_size - 2.0, 18.0 * vars.scale, WHITE);
+    }
+
+    // Y-axis ticks (up & down from center)
+    for i in -y_steps..=y_steps {
+        if i == 0 {continue;}
+        let y = real_mid.y + i as f32 * vars.step;
+        draw_line(real_mid.x - 7.0, y, real_mid.x + 7.0, y, 1.0, WHITE);
+        draw_text(&(-i).to_string(), real_mid.x + vars.font_size + 2.0, y + vars.font_size / 2.0, 18.0 * vars.scale, WHITE);
     }
 }
+
 
 fn grid(vars: &Vars) {
     let grey = Color::new(163.0, 163.0, 163.0, 0.05);
-    // x axis lines 
-    for i in 1..=(screen_height() / vars.step) as i32 {
-        draw_line(0.0, i as f32 * vars.step, screen_width(), i as f32 * vars.step, 1.0, grey);
+    let x_steps = ((vars.view.1.x - vars.cam_mid.x) / vars.step).ceil() as i32; // Steps right of mid
+    let y_steps = ((vars.view.1.y - vars.cam_mid.y) / vars.step).ceil() as i32; // Steps above mid
+
+
+    for i in -x_steps..=x_steps {
+        let x = vars.cam_mid.x + i as f32 * vars.step;
+        draw_line(x, vars.view.0.y, x, vars.view.1.y, 1.0, grey);
     }
 
-    // y axis lines 
-    for i in 1..=(screen_width() / vars.step) as i32 {
-        draw_line(i as f32 * vars.step, 0.0, i as f32 * vars.step, screen_height(), 1.0, grey);
+    for i in -y_steps..=y_steps {
+        let y = vars.cam_mid.y + i as f32 * vars.step;
+        draw_line(vars.view.0.x, y, vars.view.1.x, y, 1.0, grey);
     }
+
 }
 
 fn calc_cords(vars: &Vars, point: &(f32, f32)) -> (f32, f32) {
-    let x = vars.mid.0 + (point.0 * vars.step * vars.scale);
-    let y = vars.mid.1 - (point.1 * vars.step * vars.scale);
+    let x = vars.cam_mid.x + (point.0 * vars.step * vars.scale);
+    let y = vars.cam_mid.y - (point.1 * vars.step * vars.scale);
     (x, y)
 }
 
