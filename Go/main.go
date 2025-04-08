@@ -24,7 +24,7 @@ func main() {
 	}
 	fmt.Println(tt)
 
-	calculated, err := tt.CalculatePoints(20)
+	calculated, err := tt.CalculatePoints(120)
 	if err != nil {
 		println("Error calculating: %s", err.Error())
 	}
